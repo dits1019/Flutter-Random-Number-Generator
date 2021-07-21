@@ -2,14 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:random_number_picker/constant/color.dart';
 
 class SettingScreen extends StatefulWidget {
-  const SettingScreen({Key? key}) : super(key: key);
+  final double slideVal;
+
+  SettingScreen({
+    required this.slideVal,
+  });
 
   @override
   _SettingScreenState createState() => _SettingScreenState();
 }
 
 class _SettingScreenState extends State<SettingScreen> {
-  double maxVal = 100000;
+  double slideVal = 10000;
+
+  @override
+  void initState() {
+    super.initState();
+
+    this.slideVal = widget.slideVal;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,53 +28,71 @@ class _SettingScreenState extends State<SettingScreen> {
       backgroundColor: PRIMARY_COLOR,
       body: SafeArea(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [renderBody(), renderSlider(), renderButton()],
+          children: [
+            renderBody(),
+            renderSlider(),
+            renderButton(),
+          ],
         ),
       ),
     );
   }
 
-  Widget renderBody() {
-    return Row(
-      children: this
-          .maxVal
-          .toInt()
-          .toString()
-          .split('')
-          .map((e) => Image.asset(
-                'assets/$e.png',
-                height: 70,
-                width: 50,
-              ))
-          .toList(),
+  renderBody() {
+    return Expanded(
+      child: Row(
+        children: this
+            .slideVal
+            .toInt()
+            .toString()
+            .split('')
+            .map(
+              (x) => Image.asset(
+                'assets/$x.png',
+                width: 50.0,
+                height: 70.0,
+              ),
+            )
+            .toList(),
+      ),
     );
   }
 
-  Widget renderSlider() {
-    return Slider(
-        value: maxVal,
-        min: 1,
-        max: 999999,
-        onChanged: (value) {
+  renderSlider() {
+    return Container(
+      height: 60.0,
+      child: Slider(
+        min: 10000,
+        max: 10000000,
+        value: slideVal,
+        onChanged: (double val) {
           setState(() {
-            maxVal = value;
+            slideVal = val;
           });
-        });
+        },
+      ),
+    );
   }
 
-  Widget renderButton() {
+  renderButton() {
     return Row(
       children: [
         Expanded(
-          child: ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context, (maxVal.toInt()).toString());
-            },
-            child: Text('SAVE'),
-            style: ElevatedButton.styleFrom(primary: RED_COLOR),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                primary: RED_COLOR,
+              ),
+              onPressed: () {
+                Navigator.of(context).pop(this.slideVal.toInt());
+              },
+              child: Text(
+                'SAVE',
+              ),
+            ),
           ),
-        )
+        ),
       ],
     );
   }

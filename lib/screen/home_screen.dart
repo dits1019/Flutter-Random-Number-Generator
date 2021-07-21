@@ -1,107 +1,40 @@
 import 'package:flutter/material.dart';
-import 'package:random_number_picker/constant/color.dart';
 import 'dart:math';
-
+import 'package:random_number_picker/constant/color.dart';
 import 'package:random_number_picker/screen/setting_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
-
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<int> randomNumbers = [123, 456, 789];
-  String selectNumber = '';
+  List<int> randomNumbers = [];
+  int maxNumber = 10000;
+
+  @override
+  void initState() {
+    super.initState();
+
+    getRandomNumbers();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: PRIMARY_COLOR,
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            randomText(),
-            Expanded(child: renderBody()),
-            renderButton()
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget randomText() {
-    TextStyle _style = TextStyle(
-        fontSize: 30, fontWeight: FontWeight.w700, color: Colors.white);
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16.0),
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Random Number', style: _style),
-              Text('Generator', style: _style),
+              renderTitle(),
+              renderBody(),
+              renderButton(),
             ],
           ),
         ),
-        IconButton(
-            onPressed: moveSetting(context),
-            // () {
-            //   Navigator.push(context,
-            //       MaterialPageRoute(builder: (context) => SettingScreen()));
-
-            //   // Navigator.of(context)
-            //   //     .push(MaterialPageRoute(builder: (_) => SettingScreen()));
-            // },
-            icon: Icon(
-              Icons.settings,
-              color: RED_COLOR,
-            ))
-      ],
-    );
-  }
-
-  Widget renderBody() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      // 배열 번지에 따라 나누고
-      // 문자열로 바꾼 후 자른다.
-      // 그 후 그 문자에 맞는 이미지를 출력
-      children: this
-          .randomNumbers
-          .map((x) => Row(
-                children: x
-                    .toString()
-                    .split('')
-                    .map((y) => Padding(
-                          padding: const EdgeInsets.only(left: 3, bottom: 7),
-                          child: Image.asset(
-                            'assets/$y.png',
-                            height: 70,
-                            width: 50,
-                          ),
-                        ))
-                    .toList(),
-              ))
-          .toList(),
-    );
-  }
-
-  Widget renderButton() {
-    return Row(
-      children: [
-        Expanded(
-          child: ElevatedButton(
-            onPressed: getRandomNumbers,
-            child: Text('RANDOME NUMBER'),
-            style: ElevatedButton.styleFrom(primary: RED_COLOR),
-          ),
-        )
-      ],
+      ),
     );
   }
 
@@ -115,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // 리스트의 길이가 3이 될 때까지 반복
     while (tempNumbers.length != 3) {
       // 랜덤 숫자 생성
-      final number = rand.nextInt(int.parse(selectNumber));
+      final number = rand.nextInt(maxNumber);
 
       // 임시 리스트에 추가
       tempNumbers.add(number);
@@ -127,10 +60,106 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  moveSetting(BuildContext context) async {
-    String result = await Navigator.push(
-        context, MaterialPageRoute(builder: (context) => SettingScreen()));
+  renderTitle() {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Random Number',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 30.0,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            IconButton(
+              onPressed: () async {
+                final result = await Navigator.of(context).push(
+                  MaterialPageRoute(
+                      builder: (_) =>
+                          SettingScreen(slideVal: this.maxNumber.toDouble())),
+                );
 
-    selectNumber = result;
+                setState(() {
+                  this.maxNumber = result;
+                });
+              },
+              splashRadius: 20.0,
+              icon: Icon(
+                Icons.settings,
+                color: RED_COLOR,
+              ),
+            ),
+          ],
+        ),
+        Row(
+          children: [
+            Text(
+              'Generator',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 30.0,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  renderBody() {
+    return Expanded(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        // 배열 번지에 따라 나누고
+        // 문자열로 바꾼 후 자른다.
+        // 그 후 문자에 맞는 이미지를 출력
+        children: this
+            .randomNumbers
+            .asMap()
+            .entries
+            .map(
+              (x) => Padding(
+                padding: EdgeInsets.only(
+                    bottom: x.key == this.randomNumbers.length - 1 ? 0 : 16.0),
+                child: Row(
+                  children: x.value
+                      .toString()
+                      .split('')
+                      .map(
+                        (y) => Image.asset(
+                          'assets/$y.png',
+                          height: 70.0,
+                          width: 50.0,
+                        ),
+                      )
+                      .toList(),
+                ),
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+
+  renderButton() {
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              primary: RED_COLOR,
+            ),
+            onPressed: this.getRandomNumbers,
+            child: Text(
+              'RANDOM NUMBER',
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
